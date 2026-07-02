@@ -1,0 +1,13 @@
+﻿隨手記
+
+幫我新增 agents.md，用來紀錄這個專案的工作藍圖
+
+給我全域設定的 agents.md 檔案路徑
+
+我有安裝yt-dlp這個程式嗎
+
+幫我去找https://www.youtube.com/@sensebar
+關於claude ai, codex, antigravity, opencode 關於AI agent的影片
+取得所有影片的網址,存成一份清單的md檔
+
+我只要網址就好，我要貼到 Notebook
