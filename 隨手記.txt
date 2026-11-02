@@ -11,3 +11,11 @@
 取得所有影片的網址,存成一份清單的md檔
 
 我只要網址就好，我要貼到 Notebook
+
+請幫我將上述所有影片的字幕抓下來,每個字幕檔另存成md檔,在這個專案目錄中
+
+將我剛剛所有的工作流程，寫成一份給其他 Agent 看的說明檔。
+
+將這個說明檔放到一個公開的 GitHub repo; 別的 Agent 讀完這個 repo 後，就會依照我們今天的流程去建構這個知識
+
+https://github.com/mathruffian-dot/sensebar-agent-knowledge-vault-builder

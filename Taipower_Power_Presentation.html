@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台電即時電力資訊簡報 - 2026年07月29日 11:00</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Noto+Sans+TC:wght@300;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0B0F19;
+            --bg-secondary: #111827;
+            --text-primary: #F3F4F6;
+            --text-secondary: #9CA3AF;
+            --accent-green: #10B981;
+            --accent-blue: #3B82F6;
+            --accent-yellow: #F59E0B;
+            --accent-cyan: #06B6D4;
+            --accent-red: #EF4444;
+            --border-color: #1F2937;
+            --card-bg: rgba(17, 24, 39, 0.7);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Slides Container */
+        .slides-container {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: scale(0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 4% 8%;
+            z-index: 1;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+            z-index: 2;
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            font-weight: 800;
+        }
+
+        .slide-title {
+            font-size: 2.8rem;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #FFF, var(--accent-cyan));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* Slide 1: Welcome */
+        .title-slide {
+            background: radial-gradient(circle at center, #1E293B 0%, #0F172A 100%);
+            text-align: center;
+        }
+
+        .title-slide h1 {
+            font-size: 4.5rem;
+            letter-spacing: -1px;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #60A5FA, #34D399);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: pulse-glow 3s infinite alternate;
+        }
+
+        .title-slide p {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            margin-bottom: 2.5rem;
+        }
+
+        .time-badge {
+            display: inline-block;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #60A5FA;
+            padding: 8px 18px;
+            border-radius: 9999px;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        /* Slide 2: Dashboard Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+            position: relative;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 10px 25px -5px rgba(6, 182, 212, 0.15);
+        }
+
+        .stat-card .label {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.8rem;
+            font-weight: 500;
+        }
+
+        .stat-card .value {
+            font-size: 3.2rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card.capacity .value { color: var(--accent-blue); }
+        .stat-card.generation .value { color: var(--accent-cyan); }
+        .stat-card.status .value { color: var(--accent-green); }
+
+        .stat-card .unit {
+            font-size: 1.2rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--accent-green);
+            background: rgba(16, 185, 129, 0.1);
+            padding: 6px 16px;
+            border-radius: 9999px;
+            margin-top: 0.5rem;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background-color: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 12px var(--accent-green);
+        }
+
+        /* Slide 3: Interactive Charts */
+        .chart-layout {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 3rem;
+            width: 100%;
+            max-width: 1200px;
+            align-items: center;
+        }
+
+        .chart-legend {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 480px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .legend-item {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 15px;
+            align-items: center;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border-color);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 4px;
+        }
+
+        .legend-item .percentage {
+            font-weight: 700;
+            color: var(--accent-cyan);
+        }
+
+        .bars-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.4rem;
+            width: 100%;
+        }
+
+        .bar-group {
+            width: 100%;
+        }
+
+        .bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
+            font-weight: 500;
+        }
+
+        .bar-bg {
+            height: 14px;
+            background: #1E293B;
+            border-radius: 9999px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+            border-radius: 9999px;
+            width: 0%;
+            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide.active .bar-fill {
+            width: var(--width);
+        }
+
+        /* Slide 4: Renewables focus */
+        .renewables-flex {
+            display: flex;
+            gap: 2rem;
+            width: 100%;
+            max-width: 1100px;
+            justify-content: center;
+        }
+
+        .renewable-box {
+            flex: 1;
+            background: linear-gradient(185deg, rgba(31, 41, 55, 0.5) 0%, rgba(17, 24, 39, 0.8) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .renewable-box:hover {
+            border-color: var(--accent-yellow);
+            transform: translateY(-5px);
+        }
+
+        .renewable-box.solar:hover { border-color: var(--accent-yellow); }
+        .renewable-box.hydro:hover { border-color: var(--accent-cyan); }
+        .renewable-box.wind:hover { border-color: var(--accent-blue); }
+
+        .renewable-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .renewable-box h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+        }
+
+        .renewable-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #FFF;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Slide 5: Data Table */
+        .table-container {
+            width: 100%;
+            max-width: 1200px;
+            height: 480px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .table-filter-bar {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 15px;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .search-input {
+            flex: 1;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-blue);
+        }
+
+        .filter-select {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .table-scroll {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        th {
+            position: sticky;
+            top: 0;
+            background: #1F2937;
+            font-weight: 600;
+            text-align: left;
+            padding: 12px 18px;
+            color: var(--text-primary);
+            z-index: 10;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        td {
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        tr:hover td {
+            background: rgba(255,255,255,0.02);
+            color: var(--text-primary);
+        }
+
+        .ratio-bar-mini {
+            height: 6px;
+            background: #374151;
+            border-radius: 3px;
+            width: 80px;
+            display: inline-block;
+            margin-right: 10px;
+            overflow: hidden;
+            vertical-align: middle;
+        }
+
+        .ratio-fill-mini {
+            height: 100%;
+            background: var(--accent-cyan);
+            border-radius: 3px;
+        }
+
+        /* Navigation Controls */
+        .nav-controls {
+            position: absolute;
+            bottom: 4%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            z-index: 100;
+            background: rgba(0,0,0,0.4);
+            padding: 10px 24px;
+            border-radius: 9999px;
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(8px);
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            outline: none;
+            transition: color 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            color: var(--text-primary);
+            transform: scale(1.1);
+        }
+
+        .nav-btn:active {
+            transform: scale(0.95);
+        }
+
+        .dots {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: #374151;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .dot.active {
+            background: var(--accent-cyan);
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        .fullscreen-btn {
+            position: absolute;
+            top: 25px;
+            right: 25px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.85rem;
+            z-index: 100;
+            transition: all 0.2s;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(255,255,255,0.08);
+            color: var(--text-primary);
+            border-color: var(--text-secondary);
+        }
+
+        /* Keyframes */
+        @keyframes pulse-glow {
+            0% { filter: drop-shadow(0 0 5px rgba(96, 165, 250, 0.2)); }
+            100% { filter: drop-shadow(0 0 20px rgba(52, 211, 153, 0.4)); }
+        }
+
+        /* Custom Scrollbar for tables and lists */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #374151;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4B5563;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fullscreen Toggle -->
+    <button class="fullscreen-btn" onclick="toggleFullScreen()">全螢幕播放</button>
+
+    <!-- Slides Container -->
+    <div class="slides-container">
+
+        <!-- Slide 1: Welcome -->
+        <div class="slide active title-slide" id="slide-0">
+            <h1>台灣電力即時發電數據</h1>
+            <p>Taipower Real-Time Electricity Grid Status</p>
+            <div class="time-badge">資料時間：2026年07月29日 11:00</div>
+        </div>
+
+        <!-- Slide 2: Dashboard Summary -->
+        <div class="slide" id="slide-1">
+            <h2 class="slide-title">即時負載與供電狀態</h2>
+            <div class="stats-grid">
+                <div class="stat-card capacity">
+                    <div class="label">今日總裝置容量</div>
+                    <div class="value">61,804.4 <span class="unit">MW</span></div>
+                </div>
+                <div class="stat-card generation">
+                    <div class="label">即時總發電量</div>
+                    <div class="value">38,494.2 <span class="unit">MW</span></div>
+                </div>
+                <div class="stat-card status">
+                    <div class="label">當前供電燈號</div>
+                    <div class="value">
+                        <div class="status-indicator">
+                            <span class="status-dot"></span>
+                            <span>綠燈 (供電充裕)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Power Source Structure -->
+        <div class="slide" id="slide-2">
+            <h2 class="slide-title">電力發電來源佔比結構</h2>
+            <div class="chart-layout">
+                <!-- Left: Growing CSS Progress Bars -->
+                <div class="bars-container">
+                    <!-- Generation Categories loop -->
+                    
+                    <div class="bar-group">
+                        <div class="bar-label">
+                            <span>燃氣</span>
+                            <span>14,431.8 MW (37.49%)</span>
+                        </div>
+                        <div class="bar-bg">
+                            <div class="bar-fill" style="--width: 37.49%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="bar-group">
+                        <div class="bar-label">
+                            <span>太陽能</span>
+                            <span>8,085.8 MW (21.01%)</span>
+                        </div>
+                        <div class="bar-bg">
+                            <div class="bar-fill" style="--width: 21.01%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="bar-group">
+                        <div class="bar-label">
+                            <span>燃煤</span>
+                            <span>6,782.0 MW (17.62%)</span>
+                        </div>
+                        <div class="bar-bg">
+                            <div class="bar-fill" style="--width: 17.62%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="bar-group">
+                        <div class="bar-label">
+                            <span>民營電廠-燃氣</span>
+                            <span>3,958.6 MW (10.28%)</span>
+                        </div>
+                        <div class="bar-bg">
+                            <div class="bar-fill" style="--width: 10.28%;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="bar-group">
+                        <div class="bar-label">
+                            <span>民營電廠-燃煤</span>
+                            <span>2,096.0 MW (5.44%)</span>
+                        </div>
+                        <div class="bar-bg">
+                            <div class="bar-fill" style="--width: 5.44%;"></div>
+                        </div>
+                    </div>
+                    
+                </div>
+
+                <!-- Right: Legend with all items -->
+                <div class="chart-legend">
+                    
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #3B82F6;"></div>
+                        <span>燃氣 (裝置容量: 15,918.2 MW)</span>
+                        <span class="percentage">14,431.8 MW (37.49%)</span>
+                    </div>
+                    
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #06B6D4;"></div>
+                        <span>太陽能 (裝置容量: 15,235.4 MW)</span>
+                        <span class="percentage">8,085.8 MW (21.01%)</span>
+                    </div>
+                    
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #10B981;"></div>
+                        <span>燃煤 (裝置容量: 10,050.0 MW)</span>
+                        <span class="percentage">6,782.0 MW (17.62%)</span>
+                    </div>
+                    
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #F59E0B;"></div>
+                        <span>民營電廠-燃氣 (裝置容量: 6,389.8 MW)</span>
+                        <span class="percentage">3,958.6 MW (10.28%)</span>
+                    </div>
+                    
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #EF4444;"></div>
+                        <span>民營電廠-燃煤 (裝置容量: 2,508.6 MW)</span>
+                        <span class="percentage">2,096.0 MW (5.44%)</span>
+                    </div>
+                    
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #8B5CF6;"></div>
+                        <span>汽電共生 (裝置容量: 627.3 MW)</span>
+                        <span class="percentage">1,995.7 MW (5.18%)</span>
+                    </div>
+                    
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #EC4899;"></div>
+                        <span>水力 (裝置容量: 2,115.7 MW)</span>
+                        <span class="percentage">487.7 MW (1.27%)</span>
+                    </div>
+                    
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #14B8A6;"></div>
+                        <span>燃料油 (裝置容量: 1,595.9 MW)</span>
+                        <span class="percentage">338.7 MW (0.88%)</span>
+                    </div>
+                    
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #F43F5E;"></div>
+                        <span>風力 (裝置容量: 3,850.0 MW)</span>
+                        <span class="percentage">230.1 MW (0.60%)</span>
+                    </div>
+                    
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #84CC16;"></div>
+                        <span>儲能 (裝置容量: 3,445.5 MW)</span>
+                        <span class="percentage">158.9 MW (0.41%)</span>
+                    </div>
+                    
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #06B6D4;"></div>
+                        <span>其它再生能源 (裝置容量: 68.0 MW)</span>
+                        <span class="percentage">37.0 MW (0.10%)</span>
+                    </div>
+                    
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #3B82F6;"></div>
+                        <span>儲能負載(Energy Storage System Load)</b> (裝置容量: 0.0 MW)</span>
+                        <span class="percentage">-108.1 MW (-0.28%)</span>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Renewables Focus -->
+        <div class="slide" id="slide-3">
+            <h2 class="slide-title">綠能與再生能源發電詳情</h2>
+            <div class="renewables-flex">
+                <div class="renewable-box solar">
+                    <div class="renewable-icon">☀️</div>
+                    <h3>太陽光電</h3>
+                    <div class="renewable-value">8,085.8 MW</div>
+                    <p style="color: var(--text-secondary);">佔全台發電比：21.01%</p>
+                </div>
+                <div class="renewable-box hydro">
+                    <div class="renewable-icon">💧</div>
+                    <h3>慣常與抽蓄水力</h3>
+                    <div class="renewable-value">487.7 MW</div>
+                    <p style="color: var(--text-secondary);">佔全台發電比：1.27%</p>
+                </div>
+                <div class="renewable-box wind">
+                    <div class="renewable-icon">💨</div>
+                    <h3>風力發電</h3>
+                    <div class="renewable-value">230.1 MW</div>
+                    <p style="color: var(--text-secondary);">佔全台發電比：0.60%</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Interactive Search Data Table -->
+        <div class="slide" id="slide-4">
+            <h2 class="slide-title">全台發電機組即時明細</h2>
+            <div class="table-container">
+                <div class="table-filter-bar">
+                    <input type="text" class="search-input" id="search-box" placeholder="搜尋機組名稱（例如：大潭、核三...）" oninput="filterTable()">
+                    <select class="filter-select" id="category-filter" onchange="filterTable()">
+                        <option value="">所有發電類型</option>
+                        <option value="儲能">儲能</option><option value="儲能負載(Energy Storage System Load)</b>">儲能負載(Energy Storage System Load)</b></option><option value="其它再生能源">其它再生能源</option><option value="太陽能">太陽能</option><option value="民營電廠-燃氣">民營電廠-燃氣</option><option value="民營電廠-燃煤">民營電廠-燃煤</option><option value="水力">水力</option><option value="汽電共生">汽電共生</option><option value="燃料油">燃料油</option><option value="燃氣">燃氣</option><option value="燃煤">燃煤</option><option value="風力">風力</option>
+                    </select>
+                </div>
+                <div class="table-scroll">
+                    <table id="units-table">
+                        <thead>
+                            <tr>
+                                <th>類型</th>
+                                <th>機組名稱</th>
+                                <th>裝置容量 (MW)</th>
+                                <th>淨發電量 (MW)</th>
+                                <th>發電/容量比率</th>
+                                <th>備註</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Javascript will render units here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Navigation Controls -->
+    <div class="nav-controls">
+        <button class="nav-btn" onclick="prevSlide()">◀</button>
+        <div class="dots" id="navigation-dots"></div>
+        <button class="nav-btn" onclick="nextSlide()">▶</button>
+    </div>
+
+    <script>
+        const unitsData = [{"category": "燃氣", "name": "大潭CC#1", "capacity": 742.7, "generation": 576.2, "ratio": "77.582%", "note": ""}, {"category": "燃氣", "name": "大潭CC#2", "capacity": 742.7, "generation": 577.4, "ratio": "77.743%", "note": ""}, {"category": "燃氣", "name": "大潭CC#3", "capacity": 724.7, "generation": 534.8, "ratio": "73.796%", "note": ""}, {"category": "燃氣", "name": "大潭CC#4", "capacity": 724.7, "generation": 237.1, "ratio": "32.717%", "note": "部分檢修"}, {"category": "燃氣", "name": "大潭CC#5", "capacity": 724.7, "generation": 534.8, "ratio": "73.796%", "note": ""}, {"category": "燃氣", "name": "大潭CC#6", "capacity": 724.7, "generation": 311.1, "ratio": "42.928%", "note": "部分檢修"}, {"category": "燃氣", "name": "大潭CC#7", "capacity": 913.1, "generation": 890.0, "ratio": "97.470%", "note": ""}, {"category": "燃氣", "name": "大潭CC#8", "capacity": 1123.6, "generation": 1039.5, "ratio": "92.515%", "note": ""}, {"category": "燃氣", "name": "大潭CC#9", "capacity": 1123.6, "generation": 1065.2, "ratio": "94.800%", "note": ""}, {"category": "燃氣", "name": "通霄CC#1", "capacity": 892.6, "generation": 857.0, "ratio": "96.012%", "note": ""}, {"category": "燃氣", "name": "通霄CC#2", "capacity": 892.6, "generation": 855.4, "ratio": "95.832%", "note": ""}, {"category": "燃氣", "name": "通霄CC#3", "capacity": 892.6, "generation": 666.7, "ratio": "74.692%", "note": ""}, {"category": "燃氣", "name": "通霄CC#6", "capacity": 321.2, "generation": 293.6, "ratio": "91.407%", "note": ""}, {"category": "燃氣", "name": "通霄GT#9", "capacity": 180.9, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "燃氣", "name": "台中CC#1(註10)", "capacity": 0.0, "generation": 1268.7, "ratio": "-", "note": ""}, {"category": "燃氣", "name": "台中CC#2(註10)", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "燃氣", "name": "興達新CC#1", "capacity": 1300.0, "generation": 1195.5, "ratio": "91.962%", "note": ""}, {"category": "燃氣", "name": "興達新CC#2(註10)", "capacity": 0.0, "generation": 615.9, "ratio": "-", "note": "新機組試俥"}, {"category": "燃氣", "name": "興達新CC#3(註10)", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "燃氣", "name": "興達CC#1", "capacity": 445.2, "generation": 329.1, "ratio": "73.923%", "note": ""}, {"category": "燃氣", "name": "興達CC#2", "capacity": 445.2, "generation": 330.1, "ratio": "74.148%", "note": ""}, {"category": "燃氣", "name": "興達CC#3", "capacity": 445.2, "generation": 213.4, "ratio": "47.935%", "note": ""}, {"category": "燃氣", "name": "興達CC#4", "capacity": 445.2, "generation": 331.3, "ratio": "74.418%", "note": ""}, {"category": "燃氣", "name": "興達CC#5", "capacity": 445.2, "generation": 272.5, "ratio": "61.210%", "note": ""}, {"category": "燃氣", "name": "南部CC#1", "capacity": 288.8, "generation": 300.8, "ratio": "104.155%", "note": ""}, {"category": "燃氣", "name": "南部CC#2", "capacity": 288.8, "generation": 300.4, "ratio": "104.017%", "note": ""}, {"category": "燃氣", "name": "南部CC#3", "capacity": 288.8, "generation": 307.4, "ratio": "106.440%", "note": ""}, {"category": "燃氣", "name": "南部CC#4", "capacity": 251.4, "generation": 234.5, "ratio": "93.278%", "note": ""}, {"category": "燃氣", "name": "大林#5", "capacity": 0.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "燃氣", "name": "大林#6", "capacity": 550.0, "generation": 293.4, "ratio": "53.345%", "note": ""}, {"category": "燃氣", "name": "小計", "capacity": 0.0, "generation": 0.0, "ratio": "", "note": ""}, {"category": "民營電廠-燃氣", "name": "海湖#1", "capacity": 450.0, "generation": 402.1, "ratio": "89.356%", "note": ""}, {"category": "民營電廠-燃氣", "name": "海湖#2", "capacity": 450.0, "generation": 396.3, "ratio": "88.067%", "note": ""}, {"category": "民營電廠-燃氣", "name": "新桃#1", "capacity": 630.0, "generation": 450.6, "ratio": "71.524%", "note": ""}, {"category": "民營電廠-燃氣", "name": "國光#1", "capacity": 480.0, "generation": 0.0, "ratio": "0.000%", "note": "配合綠電先行"}, {"category": "民營電廠-燃氣", "name": "星彰#1", "capacity": 506.9, "generation": 442.5, "ratio": "87.303%", "note": ""}, {"category": "民營電廠-燃氣", "name": "星元#1", "capacity": 549.1, "generation": 0.0, "ratio": "0.000%", "note": "電力潮流限制"}, {"category": "民營電廠-燃氣", "name": "嘉惠#1", "capacity": 700.0, "generation": 689.0, "ratio": "98.429%", "note": ""}, {"category": "民營電廠-燃氣", "name": "嘉惠#2", "capacity": 510.0, "generation": 0.0, "ratio": "0.000%", "note": "配合綠電先行"}, {"category": "民營電廠-燃氣", "name": "豐德#1", "capacity": 506.9, "generation": 201.4, "ratio": "39.735%", "note": ""}, {"category": "民營電廠-燃氣", "name": "豐德#2", "capacity": 506.9, "generation": 438.8, "ratio": "86.573%", "note": ""}, {"category": "民營電廠-燃氣", "name": "豐德#3", "capacity": 1100.0, "generation": 937.9, "ratio": "85.264%", "note": ""}, {"category": "民營電廠-燃氣", "name": "小計", "capacity": 0.0, "generation": 0.0, "ratio": "", "note": ""}, {"category": "燃煤", "name": "林口#1", "capacity": 800.0, "generation": 752.0, "ratio": "94.000%", "note": ""}, {"category": "燃煤", "name": "林口#2", "capacity": 800.0, "generation": 756.3, "ratio": "94.537%", "note": ""}, {"category": "燃煤", "name": "林口#3", "capacity": 800.0, "generation": 747.3, "ratio": "93.412%", "note": ""}, {"category": "燃煤", "name": "台中#1", "capacity": 550.0, "generation": 337.7, "ratio": "61.400%", "note": ""}, {"category": "燃煤", "name": "台中#2", "capacity": 550.0, "generation": 343.1, "ratio": "62.382%", "note": ""}, {"category": "燃煤", "name": "台中#3", "capacity": 550.0, "generation": 351.8, "ratio": "63.964%", "note": ""}, {"category": "燃煤", "name": "台中#4", "capacity": 550.0, "generation": 345.9, "ratio": "62.891%", "note": ""}, {"category": "燃煤", "name": "台中#5", "capacity": 550.0, "generation": 314.9, "ratio": "57.255%", "note": ""}, {"category": "燃煤", "name": "台中#6", "capacity": 550.0, "generation": 0.0, "ratio": "0.000%", "note": "環保停機檢修"}, {"category": "燃煤", "name": "台中#7", "capacity": 550.0, "generation": 327.8, "ratio": "59.600%", "note": ""}, {"category": "燃煤", "name": "台中#8", "capacity": 550.0, "generation": 325.7, "ratio": "59.218%", "note": ""}, {"category": "燃煤", "name": "台中#9", "capacity": 550.0, "generation": 331.5, "ratio": "60.273%", "note": ""}, {"category": "燃煤", "name": "台中#10", "capacity": 550.0, "generation": 333.1, "ratio": "60.564%", "note": ""}, {"category": "燃煤", "name": "興達#1(註15)", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "燃煤", "name": "興達#2(註15)", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "燃煤", "name": "興達#3(註15)", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "燃煤", "name": "興達#4(註12)", "capacity": 550.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "燃煤", "name": "大林#1", "capacity": 800.0, "generation": 757.0, "ratio": "94.625%", "note": ""}, {"category": "燃煤", "name": "大林#2", "capacity": 800.0, "generation": 757.9, "ratio": "94.738%", "note": ""}, {"category": "燃煤", "name": "小計", "capacity": 0.0, "generation": 0.0, "ratio": "", "note": ""}, {"category": "民營電廠-燃煤", "name": "和平#1", "capacity": 648.6, "generation": 572.8, "ratio": "88.320%", "note": ""}, {"category": "民營電廠-燃煤", "name": "和平#2", "capacity": 660.0, "generation": 571.1, "ratio": "86.530%", "note": ""}, {"category": "民營電廠-燃煤", "name": "麥寮#1", "capacity": 600.0, "generation": 475.5, "ratio": "79.250%", "note": ""}, {"category": "民營電廠-燃煤", "name": "麥寮#3", "capacity": 600.0, "generation": 476.6, "ratio": "79.433%", "note": ""}, {"category": "民營電廠-燃煤", "name": "小計", "capacity": 0.0, "generation": 0.0, "ratio": "", "note": ""}, {"category": "汽電共生", "name": "汽電共生", "capacity": 627.3, "generation": 1995.7, "ratio": "-", "note": ""}, {"category": "汽電共生", "name": "小計", "capacity": 0.0, "generation": 0.0, "ratio": "", "note": ""}, {"category": "燃料油", "name": "協和#3", "capacity": 500.0, "generation": 143.1, "ratio": "28.620%", "note": "環保限制"}, {"category": "燃料油", "name": "協和#4", "capacity": 500.0, "generation": 141.4, "ratio": "28.280%", "note": "環保限制"}, {"category": "燃料油", "name": "澎湖尖山(註4)", "capacity": 129.8, "generation": 54.2, "ratio": "41.757%", "note": ""}, {"category": "燃料油", "name": "核二Gas1", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "燃料油", "name": "核二Gas2", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "燃料油", "name": "核三Gas1", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "燃料油", "name": "核三Gas2", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "燃料油", "name": "台中Gas1&2", "capacity": 140.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "燃料油", "name": "台中Gas3&4", "capacity": 140.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "燃料油", "name": "金門塔山(註4)", "capacity": 113.3, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "燃料油", "name": "馬祖珠山(註4)", "capacity": 28.6, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "燃料油", "name": "離島其它(註4)", "capacity": 44.2, "generation": 0.0, "ratio": "N/A", "note": ""}, {"category": "燃料油", "name": "小計", "capacity": 0.0, "generation": 0.0, "ratio": "", "note": ""}, {"category": "太陽能", "name": "彰濱光", "capacity": 100.0, "generation": 72.37, "ratio": "72.371%", "note": ""}, {"category": "太陽能", "name": "南鹽光", "capacity": 150.0, "generation": 76.268, "ratio": "50.845%", "note": ""}, {"category": "太陽能", "name": "其它台電自有", "capacity": 24.3, "generation": 2.502, "ratio": "10.296%", "note": ""}, {"category": "太陽能", "name": "崙尾光", "capacity": 0.0, "generation": 182.0, "ratio": "-", "note": "新增設備測試運轉"}, {"category": "太陽能", "name": "天衝光", "capacity": 0.0, "generation": 136.08, "ratio": "-", "note": "新增設備測試運轉"}, {"category": "太陽能", "name": "天篷光", "capacity": 80.0, "generation": 59.36, "ratio": "74.219%", "note": ""}, {"category": "太陽能", "name": "寶興光(註10)", "capacity": 0.0, "generation": 31.92, "ratio": "-", "note": ""}, {"category": "太陽能", "name": "聯華光(註10)", "capacity": 0.0, "generation": 150.336, "ratio": "-", "note": ""}, {"category": "太陽能", "name": "向陽光(註10)", "capacity": 0.0, "generation": 61.826, "ratio": "-", "note": ""}, {"category": "太陽能", "name": "星崴光(註10)", "capacity": 0.0, "generation": 51.8, "ratio": "-", "note": ""}, {"category": "太陽能", "name": "碩力光(註10)", "capacity": 0.0, "generation": 171.904, "ratio": "-", "note": ""}, {"category": "太陽能", "name": "天英光(註10)", "capacity": 0.0, "generation": 84.56, "ratio": "-", "note": ""}, {"category": "太陽能", "name": "志光光(註10)", "capacity": 0.0, "generation": 39.2, "ratio": "-", "note": ""}, {"category": "太陽能", "name": "永堯光(註10)", "capacity": 0.0, "generation": 30.464, "ratio": "-", "note": ""}, {"category": "太陽能", "name": "昱昶光(註10)", "capacity": 0.0, "generation": 24.6, "ratio": "-", "note": ""}, {"category": "太陽能", "name": "星崙光(註10)", "capacity": 0.0, "generation": 106.4, "ratio": "-", "note": ""}, {"category": "太陽能", "name": "新和光(註10)", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "太陽能", "name": "生利光(註10)", "capacity": 0.0, "generation": 28.84, "ratio": "-", "note": ""}, {"category": "太陽能", "name": "廷和光(註10)", "capacity": 0.0, "generation": 27.72, "ratio": "-", "note": ""}, {"category": "太陽能", "name": "星股光(註10)", "capacity": 0.0, "generation": 23.24, "ratio": "-", "note": ""}, {"category": "太陽能", "name": "其它購電太陽能", "capacity": 14881.1, "generation": 6724.438, "ratio": "45.188%", "note": ""}, {"category": "太陽能", "name": "小計", "capacity": 0.0, "generation": 0.0, "ratio": "", "note": ""}, {"category": "風力", "name": "觀園", "capacity": 30.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "風力", "name": "台中港", "capacity": 35.0, "generation": 3.0, "ratio": "8.571%", "note": ""}, {"category": "風力", "name": "王功", "capacity": 23.0, "generation": 0.7, "ratio": "3.043%", "note": ""}, {"category": "風力", "name": "彰工", "capacity": 86.2, "generation": 1.8, "ratio": "2.088%", "note": "部分檢修"}, {"category": "風力", "name": "雲麥", "capacity": 46.0, "generation": 2.1, "ratio": "4.565%", "note": ""}, {"category": "風力", "name": "四湖", "capacity": 28.0, "generation": 2.2, "ratio": "7.857%", "note": ""}, {"category": "風力", "name": "其它台電自有", "capacity": 84.7, "generation": 14.9, "ratio": "17.583%", "note": ""}, {"category": "風力", "name": "苗栗大鵬", "capacity": 42.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "風力", "name": "鹿威彰濱", "capacity": 55.2, "generation": 2.2, "ratio": "3.986%", "note": ""}, {"category": "風力", "name": "觀威觀音&桃威新屋", "capacity": 48.3, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "風力", "name": "中威大安", "capacity": 75.9, "generation": 0.2, "ratio": "0.253%", "note": ""}, {"category": "風力", "name": "創維風", "capacity": 49.2, "generation": 4.9, "ratio": "9.959%", "note": ""}, {"category": "風力", "name": "新源崙背", "capacity": 25.2, "generation": 4.2, "ratio": "16.667%", "note": ""}, {"category": "風力", "name": "彰品風(註10)", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "風力", "name": "其它購電風力", "capacity": 178.4, "generation": 1.7, "ratio": "0.954%", "note": ""}, {"category": "風力", "name": "離岸一期", "capacity": 109.2, "generation": 3.1, "ratio": "2.821%", "note": ""}, {"category": "風力", "name": "離岸二期(註10)", "capacity": 0.0, "generation": 0.9, "ratio": "-", "note": ""}, {"category": "風力", "name": "海洋竹南", "capacity": 128.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "風力", "name": "海能風", "capacity": 376.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "風力", "name": "沃一風", "capacity": 605.2, "generation": 27.2, "ratio": "4.495%", "note": ""}, {"category": "風力", "name": "沃二風", "capacity": 294.8, "generation": 11.5, "ratio": "3.901%", "note": ""}, {"category": "風力", "name": "沃四風(註10)", "capacity": 0.0, "generation": 45.6, "ratio": "-", "note": ""}, {"category": "風力", "name": "沃南風(註10)", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "風力", "name": "芳一風", "capacity": 96.0, "generation": 4.2, "ratio": "4.375%", "note": ""}, {"category": "風力", "name": "芳二風", "capacity": 499.2, "generation": 27.4, "ratio": "5.489%", "note": ""}, {"category": "風力", "name": "允湖", "capacity": 320.0, "generation": 23.5, "ratio": "7.344%", "note": ""}, {"category": "風力", "name": "允西", "capacity": 320.0, "generation": 22.7, "ratio": "7.094%", "note": ""}, {"category": "風力", "name": "中能風", "capacity": 294.5, "generation": 11.6, "ratio": "3.939%", "note": ""}, {"category": "風力", "name": "龍A風(註10)", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "風力", "name": "龍B風(註10)", "capacity": 0.0, "generation": 14.5, "ratio": "-", "note": ""}, {"category": "風力", "name": "小計(註5)", "capacity": 0.0, "generation": 0.0, "ratio": "", "note": ""}, {"category": "水力", "name": "德基#1", "capacity": 78.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "德基#2", "capacity": 78.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "德基#3", "capacity": 78.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "青山#1", "capacity": 92.0, "generation": 7.6, "ratio": "8.261%", "note": ""}, {"category": "水力", "name": "青山#2", "capacity": 92.0, "generation": 7.6, "ratio": "8.261%", "note": ""}, {"category": "水力", "name": "青山#3", "capacity": 92.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "青山#4", "capacity": 92.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "谷關#1", "capacity": 54.4, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "谷關#2", "capacity": 54.4, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "谷關#3", "capacity": 54.4, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "谷關#4", "capacity": 54.4, "generation": 35.6, "ratio": "65.381%", "note": ""}, {"category": "水力", "name": "天輪#1", "capacity": 22.5, "generation": 11.8, "ratio": "52.444%", "note": ""}, {"category": "水力", "name": "天輪#2", "capacity": 22.5, "generation": 10.8, "ratio": "48.000%", "note": ""}, {"category": "水力", "name": "天輪#3", "capacity": 22.5, "generation": 11.9, "ratio": "52.889%", "note": ""}, {"category": "水力", "name": "天輪#4", "capacity": 22.5, "generation": 11.9, "ratio": "52.889%", "note": ""}, {"category": "水力", "name": "天輪#5", "capacity": 105.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "馬鞍#1", "capacity": 66.7, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "馬鞍#2", "capacity": 66.7, "generation": 44.9, "ratio": "67.276%", "note": ""}, {"category": "水力", "name": "卓蘭#1", "capacity": 40.0, "generation": 18.4, "ratio": "46.000%", "note": ""}, {"category": "水力", "name": "卓蘭#2", "capacity": 40.0, "generation": 36.2, "ratio": "90.500%", "note": "運轉限制"}, {"category": "水力", "name": "萬大#1", "capacity": 10.4, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "萬大#2", "capacity": 10.4, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "萬大#3", "capacity": 15.3, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "萬大#4", "capacity": 19.7, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "松林#1&2", "capacity": 20.9, "generation": 1.5, "ratio": "7.072%", "note": ""}, {"category": "水力", "name": "大觀一#1", "capacity": 22.0, "generation": 2.3, "ratio": "10.455%", "note": ""}, {"category": "水力", "name": "大觀一#2", "capacity": 22.0, "generation": 4.7, "ratio": "21.364%", "note": "運轉限制"}, {"category": "水力", "name": "大觀一#3", "capacity": 22.0, "generation": 2.0, "ratio": "9.091%", "note": ""}, {"category": "水力", "name": "大觀一#4", "capacity": 22.0, "generation": 2.6, "ratio": "11.818%", "note": ""}, {"category": "水力", "name": "大觀一#5", "capacity": 22.0, "generation": 1.3, "ratio": "5.909%", "note": ""}, {"category": "水力", "name": "鉅工#1", "capacity": 21.8, "generation": 1.5, "ratio": "6.897%", "note": ""}, {"category": "水力", "name": "鉅工#2", "capacity": 21.8, "generation": 2.9, "ratio": "13.333%", "note": ""}, {"category": "水力", "name": "水里#1", "capacity": 12.8, "generation": 3.0, "ratio": "23.529%", "note": ""}, {"category": "水力", "name": "立霧#1&#2", "capacity": 32.0, "generation": 13.0, "ratio": "40.625%", "note": "部分歲修"}, {"category": "水力", "name": "龍澗#1", "capacity": 48.6, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "龍澗#2", "capacity": 48.6, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "碧海", "capacity": 61.2, "generation": 7.4, "ratio": "12.092%", "note": ""}, {"category": "水力", "name": "烏來&桂山&粗坑", "capacity": 40.5, "generation": 28.7, "ratio": "70.864%", "note": ""}, {"category": "水力", "name": "北部小水力(註6)", "capacity": 31.1, "generation": 28.6, "ratio": "91.864%", "note": ""}, {"category": "水力", "name": "中部小水力(註6)", "capacity": 31.3, "generation": 14.4, "ratio": "46.014%", "note": ""}, {"category": "水力", "name": "南部小水力(註6)", "capacity": 7.2, "generation": 4.9, "ratio": "68.340%", "note": ""}, {"category": "水力", "name": "東部小水力(註6)", "capacity": 54.6, "generation": 14.4, "ratio": "26.403%", "note": ""}, {"category": "水力", "name": "翡翠#1", "capacity": 70.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "石門#1", "capacity": 45.0, "generation": 44.5, "ratio": "98.889%", "note": ""}, {"category": "水力", "name": "石門#2", "capacity": 45.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "曾文#1", "capacity": 50.0, "generation": 49.6, "ratio": "99.200%", "note": ""}, {"category": "水力", "name": "義興#1", "capacity": 40.0, "generation": 37.4, "ratio": "93.500%", "note": ""}, {"category": "水力", "name": "名間", "capacity": 16.7, "generation": 8.0, "ratio": "47.904%", "note": ""}, {"category": "水力", "name": "嘉南西口、烏山頭和八田", "capacity": 13.7, "generation": 18.3, "ratio": "133.421%", "note": ""}, {"category": "水力", "name": "卑南", "capacity": 2.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "捷祥關山", "capacity": 1.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "水力", "name": "其它購電小水力", "capacity": 6.1, "generation": 0.0, "ratio": "N/A", "note": ""}, {"category": "水力", "name": "小計", "capacity": 0.0, "generation": 0.0, "ratio": "", "note": ""}, {"category": "儲能", "name": "大觀二#1", "capacity": 250.0, "generation": 158.9, "ratio": "63.560%", "note": ""}, {"category": "儲能", "name": "大觀二#2", "capacity": 250.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "儲能", "name": "大觀二#3", "capacity": 250.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "儲能", "name": "大觀二#4", "capacity": 250.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "儲能", "name": "明潭#1", "capacity": 267.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "儲能", "name": "明潭#2", "capacity": 267.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "儲能", "name": "明潭#3", "capacity": 267.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "儲能", "name": "明潭#4", "capacity": 267.0, "generation": 0.0, "ratio": "0.000%", "note": "檢修"}, {"category": "儲能", "name": "明潭#5", "capacity": 267.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "儲能", "name": "明潭#6", "capacity": 267.0, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "儲能", "name": "電池(註16)", "capacity": 843.5, "generation": 0.0, "ratio": "0.000%", "note": ""}, {"category": "儲能", "name": "小計", "capacity": 0.0, "generation": 0.0, "ratio": "", "note": ""}, {"category": "其它再生能源", "name": "台電自有地熱", "capacity": 0.84, "generation": 0.3, "ratio": "35.70014%", "note": ""}, {"category": "其它再生能源", "name": "購電地熱", "capacity": 6.449, "generation": 2.5, "ratio": "38.70066%", "note": ""}, {"category": "其它再生能源", "name": "生質能(Biofuel)", "capacity": 60.7, "generation": 34.2, "ratio": "56.380%", "note": ""}, {"category": "其它再生能源", "name": "小計", "capacity": 0.0, "generation": 0.0, "ratio": "", "note": ""}, {"category": "儲能負載(Energy Storage System Load)</b>", "name": "大觀二#1", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "儲能負載(Energy Storage System Load)</b>", "name": "大觀二#2", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "儲能負載(Energy Storage System Load)</b>", "name": "大觀二#3", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "儲能負載(Energy Storage System Load)</b>", "name": "大觀二#4", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "儲能負載(Energy Storage System Load)</b>", "name": "明潭#1", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "儲能負載(Energy Storage System Load)</b>", "name": "明潭#2", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "儲能負載(Energy Storage System Load)</b>", "name": "明潭#3", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "儲能負載(Energy Storage System Load)</b>", "name": "明潭#4", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": "檢修"}, {"category": "儲能負載(Energy Storage System Load)</b>", "name": "明潭#5", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "儲能負載(Energy Storage System Load)</b>", "name": "明潭#6", "capacity": 0.0, "generation": 0.0, "ratio": "-", "note": ""}, {"category": "儲能負載(Energy Storage System Load)</b>", "name": "電池(註16)", "capacity": 0.0, "generation": -108.1, "ratio": "-", "note": ""}];
+        
+        let currentSlide = 0;
+        const totalSlides = 5;
+
+        // Initialize Navigation Dots
+        const dotsContainer = document.getElementById("navigation-dots");
+        for (let i = 0; i < totalSlides; i++) {
+            const dot = document.createElement("div");
+            dot.className = i === 0 ? "dot active" : "dot";
+            dot.onclick = () => showSlide(i);
+            dotsContainer.appendChild(dot);
+        }
+
+        function showSlide(index) {
+            if (index < 0 || index >= totalSlides) return;
+            
+            // Remove active classes
+            document.querySelectorAll(".slide").forEach(s => s.classList.remove("active"));
+            document.querySelectorAll(".dot").forEach(d => d.classList.remove("active"));
+            
+            // Set active
+            document.getElementById(`slide-${index}`).classList.add("active");
+            dotsContainer.children[index].classList.add("active");
+            currentSlide = index;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                showSlide(currentSlide + 1);
+            } else {
+                showSlide(0); // Loop back
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                showSlide(currentSlide - 1);
+            } else {
+                showSlide(totalSlides - 1); // Loop to end
+            }
+        }
+
+        // Key Listeners
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowRight" || e.key === " ") {
+                nextSlide();
+            } else if (e.key === "ArrowLeft") {
+                prevSlide();
+            }
+        });
+
+        // Render table
+        function renderTable(dataToRender) {
+            const tbody = document.querySelector("#units-table tbody");
+            tbody.innerHTML = "";
+            
+            dataToRender.forEach(item => {
+                const tr = document.createElement("tr");
+                
+                // Parse numeric ratio
+                let ratioNum = parseFloat(item.ratio);
+                if (isNaN(ratioNum)) ratioNum = 0.0;
+                
+                tr.innerHTML = `
+                    <td>${item.category}</td>
+                    <td style="color: var(--text-primary); font-weight: 500;">${item.name}</td>
+                    <td>${item.capacity.toLocaleString('en-US', {minimumFractionDigits: 1})}</td>
+                    <td style="color: var(--accent-cyan); font-weight: 600;">${item.generation.toLocaleString('en-US', {minimumFractionDigits: 1})}</td>
+                    <td>
+                        <div class="ratio-bar-mini">
+                            <div class="ratio-fill-mini" style="width: ${Math.min(ratioNum, 100)}%;"></div>
+                        </div>
+                        <span style="font-size: 0.85rem;">${item.ratio}</span>
+                    </td>
+                    <td style="font-size: 0.85rem; color: ${item.note ? 'var(--accent-yellow)' : 'var(--text-secondary)'}">${item.note || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterTable() {
+            const query = document.getElementById("search-box").value.toLowerCase();
+            const selectedCat = document.getElementById("category-filter").value;
+            
+            const filtered = unitsData.filter(item => {
+                const matchesQuery = item.name.toLowerCase().includes(query) || item.category.toLowerCase().includes(query);
+                const matchesCat = !selectedCat || item.category === selectedCat;
+                return matchesQuery && matchesCat;
+            });
+            
+            renderTable(filtered);
+        }
+
+        // Fullscreen Toggle
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`無法切換為全螢幕: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // Init
+        renderTable(unitsData);
+    </script>
+</body>
+</html>
